@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Loader2, Search, Camera, ChevronLeft, Check, Upload } from "lucide-react";
+import ePub from "epubjs";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
@@ -32,7 +33,7 @@ export default function CreateSession() {
     is_public: true,
     description: "",
   });
-  const [bookFile, setBookFile] = useState(null);
+  const [bookFileUrl, setBookFileUrl] = useState("");
   const [bookFileType, setBookFileType] = useState("epub");
 
   const doSearch = async (q) => {
@@ -58,19 +59,50 @@ export default function CreateSession() {
     } finally { setCoverUploading(false); }
   };
 
-  const handleBookFile = (e) => {
+  const handleUploadBook = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    e.target.value = "";
     const isPdf = /\.pdf$/i.test(file.name) || file.type === "application/pdf";
     const isEpub = /\.epub$/i.test(file.name) || file.type === "application/epub+zip";
     if (!isPdf && !isEpub) {
       toast({ title: "Choose an EPUB or PDF file", variant: "destructive" });
-      e.target.value = "";
       return;
     }
-    setBookFile(file);
-    setBookFileType(isPdf ? "pdf" : "epub");
-    e.target.value = "";
+    setCoverUploading(true);
+    try {
+      const up = await base44.integrations.Core.UploadFile({ file });
+      const fileUrl = up.file_url;
+      let title = file.name.replace(/\.(epub|pdf)$/i, "");
+      let author = "";
+      let cover_url = "";
+      if (isEpub) {
+        let book = null;
+        try {
+          book = ePub(fileUrl);
+          await book.ready;
+          const md = book.metadata || (await book.loaded.metadata);
+          title = md?.title || title;
+          author = (md?.creator || "").trim();
+          const coverBlobUrl = await book.coverUrl();
+          if (coverBlobUrl) {
+            const res = await fetch(coverBlobUrl);
+            const blob = await res.blob();
+            const coverFile = new File([blob], "cover.jpg", { type: blob.type || "image/jpeg" });
+            const c = await base44.integrations.Core.UploadFile({ file: coverFile });
+            cover_url = c.file_url;
+          }
+        } catch { /* best-effort */ } finally { try { if (book) book.destroy(); } catch {} }
+      }
+      setBook({ title, author, cover_url, description: "", source: "manual" });
+      setBookFileUrl(fileUrl);
+      setBookFileType(isPdf ? "pdf" : "epub");
+      setStep(1);
+    } catch (err) {
+      toast({ title: "Upload failed", description: err.message, variant: "destructive" });
+    } finally {
+      setCoverUploading(false);
+    }
   };
 
   const create = async () => {
@@ -92,16 +124,6 @@ export default function CreateSession() {
           page_count: book.page_count || 0, source: book.source || "manual"
         });
         bookId = created.id;
-      }
-
-      let bookFileUrl = "";
-      if (bookFile) {
-        try {
-          const up = await base44.integrations.Core.UploadFile({ file: bookFile });
-          bookFileUrl = up.file_url;
-        } catch {
-          toast({ title: "Book file upload failed", variant: "destructive" });
-        }
       }
 
       const member_profiles = [{
@@ -170,7 +192,7 @@ export default function CreateSession() {
           {results && !searching && (
             <div className="grid grid-cols-2 gap-3 mb-4">
               {results.map((b) => (
-                <button key={b.external_id} onClick={() => { setBook(b); setStep(1); }}
+                <button key={b.external_id} onClick={() => { setBookFileUrl(""); setBookFileType("epub"); setBook(b); setStep(1); }}
                   className="text-left rounded-2xl bg-card border border-border p-3 hover:border-primary/40">
                   <BookCover book={b} className="w-full aspect-[3/4] rounded-lg mb-2" />
                   <h3 className="text-sm font-semibold line-clamp-2">{b.title}</h3>
@@ -179,10 +201,18 @@ export default function CreateSession() {
               ))}
             </div>
           )}
-          <button onClick={() => { setBook({ title: "", author: "", cover_url: "", description: "", source: "manual" }); setStep(1); }}
+          <button onClick={() => { setBookFileUrl(""); setBookFileType("epub"); setBook({ title: "", author: "", cover_url: "", description: "", source: "manual" }); setStep(1); }}
             className="w-full rounded-2xl border border-dashed border-border p-4 text-sm text-muted-foreground hover:border-primary/40 hover:text-foreground">
             + Add a book manually
           </button>
+
+          <label className="w-full rounded-2xl border-2 border-dashed border-primary/40 bg-primary/5 p-4 flex flex-col items-center gap-1 text-sm font-medium text-primary cursor-pointer hover:bg-primary/10 transition-colors mt-3">
+            {coverUploading
+              ? <><Loader2 className="w-5 h-5 animate-spin" /> Reading your file…</>
+              : <><Upload className="w-5 h-5" /> Upload an EPUB or PDF</>}
+            <span className="text-xs font-normal text-muted-foreground">We'll pull the title, author and cover for you.</span>
+            <input type="file" accept=".epub,.pdf,application/epub+zip,application/pdf" onChange={handleUploadBook} className="hidden" />
+          </label>
         </div>
       )}
 
@@ -238,15 +268,11 @@ export default function CreateSession() {
               <Label>A note for readers <span className="text-muted-foreground font-normal">(optional)</span></Label>
               <Textarea rows={3} placeholder="What are you hoping to get out of this read?" value={settings.description} onChange={(e) => setSettings({ ...settings, description: e.target.value })} />
             </div>
-            <div>
-              <Label>Book file <span className="text-muted-foreground font-normal">(optional — EPUB or PDF)</span></Label>
-              <p className="text-xs text-muted-foreground mb-2">Upload it so everyone in the circle can read along from their library.</p>
-              <label className="flex items-center justify-center gap-2 w-full h-12 rounded-xl border-2 border-dashed border-border bg-card text-sm font-medium cursor-pointer hover:border-primary/40 hover:text-primary transition-colors">
-                <Upload className="w-4 h-4" />
-                {bookFile ? <span className="truncate max-w-[60%]">{bookFile.name} · {bookFileType.toUpperCase()}</span> : "Choose EPUB or PDF"}
-                <input type="file" accept=".epub,.pdf,application/epub+zip,application/pdf" onChange={handleBookFile} className="hidden" />
-              </label>
-            </div>
+            {bookFileUrl && (
+              <div className="rounded-xl border border-border bg-card p-3 text-xs text-muted-foreground">
+                Book file attached ({bookFileType.toUpperCase()}) — readers will find it in their library.
+              </div>
+            )}
             <div className="flex items-center justify-between rounded-xl border border-border p-4">
               <div>
                 <p className="font-medium text-sm">Public reading circle</p>
