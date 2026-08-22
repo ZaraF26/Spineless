@@ -58,6 +58,8 @@ export default function EpubReader() {
     let book = null;
     let ren = null;
     let cancelled = false;
+    let scrollT = null;
+    let onScroll = () => {};
 
     (async () => {
       try {
@@ -86,7 +88,7 @@ export default function EpubReader() {
         book = ePub(rec.file_url);
         ren = book.renderTo(containerRef.current, {
           width: "100%", height: "100%", flow: "scrolled-doc", spread: "none",
-          allowScriptedContent: false, manager: "continuous",
+          allowScriptedContent: false, manager: "default",
         });
         await ren.display(rec.cfi || undefined);
         if (cancelled) return;
@@ -95,6 +97,16 @@ export default function EpubReader() {
 
         applyTheme(ren, rec.theme || DEFAULT_THEME, rec.font_scale || 100);
         spineRef.current = book.spine.spineItems || [];
+
+        // Live progress: emit a "relocated" as the user scrolls within a chapter
+        onScroll = () => {
+          if (scrollT) return;
+          scrollT = setTimeout(() => {
+            scrollT = null;
+            try { ren.emit("relocated", ren.currentLocation()); } catch {}
+          }, 200);
+        };
+        containerRef.current?.addEventListener("scroll", onScroll, true);
 
         (rec.highlights || []).forEach((h) => {
           try {
@@ -137,6 +149,7 @@ export default function EpubReader() {
     return () => {
       cancelled = true;
       if (saveTimer.current) clearTimeout(saveTimer.current);
+      try { containerRef.current?.removeEventListener("scroll", onScroll, true); } catch {}
       try { if (ren) ren.destroy(); } catch {}
       try { if (book) book.destroy(); } catch {}
       renditionRef.current = null;
@@ -197,17 +210,9 @@ export default function EpubReader() {
   };
 
   const goChapter = (dir) => {
-    const items = spineRef.current || [];
-    if (!items.length) return;
-    const cur = (currentHrefRef.current || "").split("#")[0];
-    let idx = items.findIndex((it) => it.href === cur || it.href === currentHrefRef.current);
-    if (idx === -1) idx = 0;
-    const next = idx + dir;
-    if (next < 0 || next >= items.length) {
-      toast({ title: dir > 0 ? "Last chapter" : "First chapter" });
-      return;
-    }
-    renditionRef.current?.display(items[next].href);
+    const ren = renditionRef.current;
+    if (!ren) return;
+    try { if (dir > 0) ren.next(); else ren.prev(); } catch {}
   };
 
   return (
