@@ -26,6 +26,54 @@
     "last_read_date": {
       "type": "string",
       "format": "date-time"
+    },
+    "theme": {
+      "type": "string",
+      "enum": [
+        "light",
+        "sepia",
+        "dark",
+        "night"
+      ],
+      "default": "light"
+    },
+    "font_scale": {
+      "type": "number",
+      "default": 100
+    },
+    "bookmarks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "cfi": {
+            "type": "string"
+          },
+          "pct": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "highlights": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "cfi": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          }
+        }
+      }
     }
   },
   "rls": {
