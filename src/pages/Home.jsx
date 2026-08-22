@@ -5,6 +5,7 @@ import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
 import PageHeader from "@/components/PageHeader";
+import SectionTile from "@/components/SectionTile";
 import SessionCard from "@/components/SessionCard";
 import ReviewCard from "@/components/ReviewCard";
 import EmptyState from "@/components/EmptyState";
@@ -65,10 +66,7 @@ export default function Home() {
         <div className="space-y-8 pb-4">
           {/* Currently Reading */}
           <section>
-            <div className="flex items-center gap-2 px-5 mb-3">
-              <Coffee className="w-4 h-4 text-primary" />
-              <h2 className="font-heading text-lg font-semibold">Currently reading</h2>
-            </div>
+            <div className="px-3 mb-3"><SectionTile icon={Coffee} title="Currently reading" tone="primary" /></div>
             {currentlyReading.length === 0 ? (
               <div className="px-5">
                 <p className="text-sm text-muted-foreground">No one is reading right now. Be the first to start a session.</p>
@@ -84,10 +82,7 @@ export default function Home() {
 
           {/* Reading With Friends */}
           <section>
-            <div className="flex items-center gap-2 px-5 mb-3">
-              <BookMarked className="w-4 h-4 text-accent-foreground" />
-              <h2 className="font-heading text-lg font-semibold">Reading with you</h2>
-            </div>
+            <div className="px-3 mb-3"><SectionTile icon={BookMarked} title="Reading with you" tone="accent" /></div>
             {mine.length === 0 ? (
               <div className="px-5">
                 <p className="text-sm text-muted-foreground">You haven't joined any reading circles yet.</p>
@@ -103,10 +98,7 @@ export default function Home() {
 
           {/* Find Your Next Read */}
           <section>
-            <div className="flex items-center gap-2 px-5 mb-3">
-              <Sparkles className="w-4 h-4 text-primary" />
-              <h2 className="font-heading text-lg font-semibold">Find your next read</h2>
-            </div>
+            <div className="px-3 mb-3"><SectionTile icon={Sparkles} title="Find your next read" tone="primary" /></div>
             {discover.length === 0 ? (
               <div className="px-5">
                 <p className="text-sm text-muted-foreground">You're caught up on everything. Try searching for a book.</p>
@@ -122,10 +114,7 @@ export default function Home() {
 
           {/* Recently Finished */}
           <section>
-            <div className="flex items-center gap-2 px-5 mb-3">
-              <BookOpen className="w-4 h-4 text-secondary-foreground" />
-              <h2 className="font-heading text-lg font-semibold">Recently finished</h2>
-            </div>
+            <div className="px-3 mb-3"><SectionTile icon={BookOpen} title="Recently finished" tone="secondary" /></div>
             {(!reviews || reviews.length === 0) ? (
               <div className="px-5">
                 <p className="text-sm text-muted-foreground">No reviews yet. Finish a book to share your thoughts.</p>
