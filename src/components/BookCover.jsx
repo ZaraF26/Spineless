@@ -11,7 +11,7 @@ export default function BookCover({ book, className = "", title }) {
         src={cover}
         alt={label}
         fittingType="fill"
-        className={`object-cover ${className}`}
+        className={`object-cover ring-1 ring-black/10 dark:ring-white/10 shadow-sm ${className}`}
       />
     );
   }
