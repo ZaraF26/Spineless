@@ -133,7 +133,7 @@ export default function Onboarding() {
           <div className="space-y-2">
             <Label htmlFor="username">Username</Label>
             <Input id="username" placeholder="reader123" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} />
-            <p className="text-xs text-muted-foreground">This is your unique handle on Readi.</p>
+            <p className="text-xs text-muted-foreground">This is your unique handle on Spineless.</p>
           </div>
           <div className="space-y-2">
             <Label htmlFor="display_name">Display name</Label>

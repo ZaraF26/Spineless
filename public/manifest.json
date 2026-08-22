@@ -1,12 +1,17 @@
 {
-  "name": "Readi — Read together",
-  "short_name": "Readi",
+  "name": "Spineless",
+  "short_name": "Spineless",
   "description": "A cosy place to read together. Discover what others are reading, start a reading circle, and discuss chapter by chapter.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f5efe4",
-  "theme_color": "#c25a3d",
+  "theme_color": "#f5efe4",
   "icons": [
-    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+    {
+      "src": "https://media.base44.com/images/public/6a89b990da6fea8b2eea3ba3/af06be972_spineless-3.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
   ]
 }
