@@ -80,7 +80,11 @@ export default function Library() {
   const handleDelete = async (book) => {
     try {
       await base44.entities.UserEpub.delete(book.id);
+      if (book.session_id) {
+        try { await base44.entities.UserBook.deleteMany({ session_id: book.session_id }); } catch {}
+      }
       setBooks((prev) => (prev || []).filter((b) => b.id !== book.id));
+      toast({ title: "Removed from your library and My Reads" });
     } catch {
       toast({ title: "Could not remove book", variant: "destructive" });
     }
