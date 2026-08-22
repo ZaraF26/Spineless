@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Home, Compass, BookOpen, User, Plus, Bell, Library as LibraryIcon } from "lucide-react";
+import { Home, Compass, BookOpen, Plus, Bell, Library as LibraryIcon } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 
 export default function Layout({ children }) {
@@ -12,10 +12,9 @@ export default function Layout({ children }) {
   const nav = [
     { to: "/home", icon: Home, label: "Home" },
     { to: "/discover", icon: Compass, label: "Discover" },
-    { to: "/library", icon: LibraryIcon, label: "Library" },
     { to: "/create-session", icon: Plus, label: "Start", center: true },
+    { to: "/library", icon: LibraryIcon, label: "Library" },
     { to: "/my-reads", icon: BookOpen, label: "My Reads" },
-    { to: "/profile", icon: User, label: "Profile" },
   ];
 
   const isActive = (to) => location.pathname === to || (to !== "/home" && location.pathname.startsWith(to));

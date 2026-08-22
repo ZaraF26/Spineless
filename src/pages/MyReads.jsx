@@ -10,6 +10,7 @@ import StarRating from "@/components/StarRating";
 import EmptyState from "@/components/EmptyState";
 import ReviewDialog from "@/components/ReviewDialog";
 import { formatDate } from "@/lib/readi";
+import ProfileAvatar from "@/components/ProfileAvatar";
 
 const STATUSES = [
   { key: "reading", label: "Reading", icon: BookOpen },
@@ -91,9 +92,12 @@ export default function MyReads() {
 
   return (
     <div className="pb-4">
-      <div className="px-5 pt-6 pb-2">
-        <h1 className="font-heading text-2xl font-semibold">My Reads</h1>
-        <p className="text-sm text-muted-foreground">Your personal reading nook.</p>
+      <div className="px-5 pt-6 pb-2 flex items-start justify-between gap-3">
+        <div>
+          <h1 className="font-heading text-2xl font-semibold">My Reads</h1>
+          <p className="text-sm text-muted-foreground">Your personal reading nook.</p>
+        </div>
+        <ProfileAvatar />
       </div>
       <div className="px-5">
         <Tabs defaultValue="reading">

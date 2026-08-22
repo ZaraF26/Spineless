@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Search, Bell, Sparkles } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
+import ProfileAvatar from "@/components/ProfileAvatar";
 
 export default function PageHeader({ title, subtitle, showActions = true }) {
   return (
@@ -22,6 +23,7 @@ export default function PageHeader({ title, subtitle, showActions = true }) {
             <Bell className="w-5 h-5" />
           </Link>
           <ThemeToggle />
+          <ProfileAvatar />
         </div>
       )}
     </div>

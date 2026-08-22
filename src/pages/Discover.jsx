@@ -9,6 +9,7 @@ import EmptyState from "@/components/EmptyState";
 import { useAuth } from "@/lib/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
 import { notify } from "@/lib/readi";
+import ProfileAvatar from "@/components/ProfileAvatar";
 
 export default function Discover() {
   const navigate = useNavigate();
@@ -61,7 +62,10 @@ export default function Discover() {
   return (
     <div>
       <div className="px-5 pt-6 pb-3 sticky top-0 bg-background/90 backdrop-blur-md z-20">
-        <h1 className="font-heading text-2xl font-semibold mb-3">Discover</h1>
+        <div className="flex items-center justify-between mb-3">
+          <h1 className="font-heading text-2xl font-semibold">Discover</h1>
+          <ProfileAvatar />
+        </div>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
