@@ -1,0 +1,12 @@
+{
+  "name": "Readi — Read together",
+  "short_name": "Readi",
+  "description": "A cosy place to read together. Discover what others are reading, start a reading circle, and discuss chapter by chapter.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f5efe4",
+  "theme_color": "#c25a3d",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

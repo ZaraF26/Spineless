@@ -1,0 +1,85 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "role": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "user"
+      ],
+      "default": "user"
+    },
+    "username": {
+      "type": "string"
+    },
+    "display_name": {
+      "type": "string"
+    },
+    "bio": {
+      "type": "string"
+    },
+    "profile_picture": {
+      "type": "string"
+    },
+    "favourite_genres": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "reading_preferences": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "goals": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "is_public": {
+      "type": "boolean",
+      "default": true
+    },
+    "allow_follow": {
+      "type": "string",
+      "enum": [
+        "everyone",
+        "approval",
+        "off"
+      ],
+      "default": "everyone"
+    },
+    "show_activity": {
+      "type": "boolean",
+      "default": true
+    },
+    "notify_joins": {
+      "type": "boolean",
+      "default": true
+    },
+    "notify_comments": {
+      "type": "boolean",
+      "default": true
+    },
+    "notify_follows": {
+      "type": "boolean",
+      "default": true
+    },
+    "onboarded": {
+      "type": "boolean",
+      "default": false
+    },
+    "suspended": {
+      "type": "boolean",
+      "default": false
+    },
+    "deletion_requested": {
+      "type": "boolean",
+      "default": false
+    }
+  }
+}

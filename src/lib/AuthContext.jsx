@@ -54,10 +54,10 @@ export const AuthProvider = ({ children }) => {
         if (appError.status === 403 && appError.data?.extra_data?.reason) {
           const reason = appError.data.extra_data.reason;
           if (reason === 'auth_required') {
-            setAuthError({
-              type: 'auth_required',
-              message: 'Authentication required'
-            });
+            // Allow public routes (Welcome, login) for logged-out visitors;
+            // protected routes gate themselves via ProtectedRoute.
+            setIsAuthenticated(false);
+            setAuthChecked(true);
           } else if (reason === 'user_not_registered') {
             setAuthError({
               type: 'user_not_registered',

@@ -1,0 +1,36 @@
+{
+  "name": "Follow",
+  "type": "object",
+  "properties": {
+    "following_id": {
+      "type": "string",
+      "required": true
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "pending"
+      ],
+      "default": "active"
+    }
+  },
+  "rls": {
+    "read": {},
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}
