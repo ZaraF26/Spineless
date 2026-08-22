@@ -9,7 +9,7 @@ export default function Avatar({ user, size = 40, className = "" }) {
   if (pic) {
     return (
       <div className={`relative overflow-hidden rounded-full shrink-0 ${className}`} style={dim}>
-        <Image src={pic} alt={name} fittingType="fill" className="w-full h-full" />
+        <Image src={pic} alt={name} fittingType="fill" className="w-full h-full object-cover" />
       </div>
     );
   }
