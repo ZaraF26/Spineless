@@ -81,10 +81,18 @@ export default function Library() {
     try {
       await base44.entities.UserEpub.delete(book.id);
       if (book.session_id) {
-        try { await base44.entities.UserBook.deleteMany({ session_id: book.session_id }); } catch {}
+        try {
+          await Promise.allSettled([
+            base44.entities.Chapter.deleteMany({ session_id: book.session_id }),
+            base44.entities.Comment.deleteMany({ session_id: book.session_id }),
+            base44.entities.UserBook.deleteMany({ session_id: book.session_id }),
+            base44.entities.UserEpub.deleteMany({ session_id: book.session_id }),
+            base44.entities.ReadingSession.delete(book.session_id),
+          ]);
+        } catch {}
       }
       setBooks((prev) => (prev || []).filter((b) => b.id !== book.id));
-      toast({ title: "Removed from your library and My Reads" });
+      toast({ title: "Removed from everywhere in the app" });
     } catch {
       toast({ title: "Could not remove book", variant: "destructive" });
     }
