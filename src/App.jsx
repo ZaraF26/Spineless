@@ -26,6 +26,8 @@ import CreateSession from '@/pages/CreateSession';
 import Settings from '@/pages/Settings';
 import Notifications from '@/pages/Notifications';
 import Admin from '@/pages/Admin';
+import Library from '@/pages/Library';
+import EpubReader from '@/pages/EpubReader';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -67,7 +69,9 @@ const AuthenticatedApp = () => {
           <Route path="/settings" element={<Settings />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/library" element={<Library />} />
         </Route>
+        <Route path="/read/:id" element={<EpubReader />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
