@@ -29,6 +29,9 @@ export default function EpubReader() {
   const [title, setTitle] = useState("");
   const [progress, setProgress] = useState(0);
 
+  const [pdfMode, setPdfMode] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState("");
+
   const [theme, setTheme] = useState(DEFAULT_THEME);
   const [fontScale, setFontScale] = useState(100);
   const [paper, setPaper] = useState(THEMES[DEFAULT_THEME].paper);
@@ -42,10 +45,9 @@ export default function EpubReader() {
     try { await base44.entities.UserEpub.update(id, partial); } catch {}
   };
 
-  // Live settings once the reader is ready
   useEffect(() => {
     const ren = renditionRef.current;
-    if (!ren) return;
+    if (!ren || pdfMode) return;
     applyTheme(ren, theme, fontScale);
     setPaper(THEMES[theme]?.paper || THEMES.light.paper);
     persist({ theme, font_scale: fontScale });
@@ -70,6 +72,17 @@ export default function EpubReader() {
         setFontScale(rec.font_scale || 100);
         setPaper(THEMES[rec.theme || DEFAULT_THEME]?.paper);
 
+        // PDF: render natively in an iframe; mark as started
+        if ((rec.file_type || "").toLowerCase() === "pdf") {
+          setPdfMode(true);
+          setPdfUrl(rec.file_url);
+          setLoading(false);
+          setProgress((p) => p || 1);
+          persist({ progress: 1, last_read_date: new Date().toISOString() });
+          return;
+        }
+        setPdfMode(false);
+
         book = ePub(rec.file_url);
         ren = book.renderTo(containerRef.current, {
           width: "100%", height: "100%", flow: "scrolled-doc", spread: "none",
@@ -83,7 +96,6 @@ export default function EpubReader() {
         applyTheme(ren, rec.theme || DEFAULT_THEME, rec.font_scale || 100);
         spineRef.current = book.spine.spineItems || [];
 
-        // Re-apply saved highlights
         (rec.highlights || []).forEach((h) => {
           try {
             ren.annotations.add("highlight", h.cfi, {}, undefined, "spineless-hl", {
@@ -92,7 +104,6 @@ export default function EpubReader() {
           } catch {}
         });
 
-        // Locations for percent progress
         book.locations.generate(800).then(() => {
           try { ren.emit("relocated", ren.currentLocation()); } catch {}
         }).catch(() => {});
@@ -110,7 +121,6 @@ export default function EpubReader() {
           }, 900);
         });
 
-        // Text selection → open the highlight / note action bar
         ren.on("selected", (cfiRange, contents) => {
           if (!cfiRange) return;
           let text = "";
@@ -202,7 +212,6 @@ export default function EpubReader() {
 
   return (
     <div className="fixed inset-0 bg-background flex flex-col z-50 max-w-md mx-auto">
-      {/* Header */}
       <div className="flex items-center gap-1 px-3 h-14 border-b border-border bg-card/80 backdrop-blur shrink-0">
         <button onClick={() => navigate("/library")} className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-secondary/60" aria-label="Close">
           <X className="w-5 h-5" />
@@ -211,23 +220,26 @@ export default function EpubReader() {
           <p className="text-sm font-medium text-foreground line-clamp-1">{title}</p>
           <p className="text-[11px] text-muted-foreground">{progress}% read</p>
         </div>
-        <button onClick={addBookmark} className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-secondary/60" aria-label="Bookmark page">
-          <Bookmark className="w-5 h-5" />
-        </button>
-        <button onClick={() => { setPanelOpen((v) => !v); setMenuOpen(false); }} className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-secondary/60" aria-label="Bookmarks & notes">
-          <BookMarked className="w-5 h-5" />
-        </button>
-        <button onClick={() => { setMenuOpen((v) => !v); setPanelOpen(false); }} className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-secondary/60" aria-label="Reading settings">
-          <Settings className="w-5 h-5" />
-        </button>
+        {!pdfMode && (
+          <>
+            <button onClick={addBookmark} className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-secondary/60" aria-label="Bookmark page">
+              <Bookmark className="w-5 h-5" />
+            </button>
+            <button onClick={() => { setPanelOpen((v) => !v); setMenuOpen(false); }} className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-secondary/60" aria-label="Bookmarks & notes">
+              <BookMarked className="w-5 h-5" />
+            </button>
+            <button onClick={() => { setMenuOpen((v) => !v); setPanelOpen(false); }} className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-secondary/60" aria-label="Reading settings">
+              <Settings className="w-5 h-5" />
+            </button>
+          </>
+        )}
       </div>
 
       <div className="h-0.5 bg-border shrink-0">
         <div className="h-full bg-primary transition-all" style={{ width: `${progress}%` }} />
       </div>
 
-      {/* Reader */}
-      <div className="flex-1 min-h-0 relative" style={{ background: paper }}>
+      <div className="flex-1 min-h-0 relative" style={{ background: pdfMode ? "#ffffff" : paper }}>
         {loading && (
           <div className="absolute inset-0 flex flex-col items-center justify-center z-20 bg-background">
             <Loader2 className="w-7 h-7 text-primary animate-spin mb-3" />
@@ -240,11 +252,13 @@ export default function EpubReader() {
             <button onClick={() => navigate("/library")} className="text-primary text-sm font-medium hover:underline">Back to library</button>
           </div>
         )}
-        <div ref={containerRef} className="absolute inset-0" />
+        {pdfMode && pdfUrl && (
+          <iframe src={pdfUrl} title={title} className="absolute inset-0 w-full h-full border-0 bg-white" />
+        )}
+        <div ref={containerRef} className="absolute inset-0" style={{ display: pdfMode ? "none" : "block" }} />
       </div>
 
-      {/* Floating chapter nav */}
-      {!loading && !error && (
+      {!loading && !error && !pdfMode && (
         <>
           <button onClick={() => goChapter(-1)} className="absolute left-3 bottom-5 w-11 h-11 rounded-full bg-card border border-border shadow-lg flex items-center justify-center z-20 hover:bg-secondary/60" aria-label="Previous chapter">
             <ChevronLeft className="w-5 h-5" />
@@ -255,23 +269,27 @@ export default function EpubReader() {
         </>
       )}
 
-      <ReaderMenu open={menuOpen} onClose={() => setMenuOpen(false)} fontScale={fontScale} setFontScale={setFontScale} theme={theme} setTheme={setTheme} />
-      <AnnotationsPanel
-        open={panelOpen}
-        onClose={() => setPanelOpen(false)}
-        bookmarks={bookmarks}
-        highlights={highlights}
-        onJumpBookmark={jump}
-        onJumpHighlight={jump}
-        onDeleteBookmark={removeBookmark}
-        onDeleteHighlight={removeHighlight}
-      />
-      <SelectionBar
-        selection={selection}
-        onClose={clearSelection}
-        onHighlight={(cfi, text) => { addHighlight(cfi, text, HIGHLIGHT, ""); toast({ title: "Highlighted" }); clearSelection(); }}
-        onSaveNote={(cfi, text, note) => { addHighlight(cfi, text, NOTE, (note || "").trim()); toast({ title: "Note saved" }); clearSelection(); }}
-      />
+      {!pdfMode && (
+        <>
+          <ReaderMenu open={menuOpen} onClose={() => setMenuOpen(false)} fontScale={fontScale} setFontScale={setFontScale} theme={theme} setTheme={setTheme} />
+          <AnnotationsPanel
+            open={panelOpen}
+            onClose={() => setPanelOpen(false)}
+            bookmarks={bookmarks}
+            highlights={highlights}
+            onJumpBookmark={jump}
+            onJumpHighlight={jump}
+            onDeleteBookmark={removeBookmark}
+            onDeleteHighlight={removeHighlight}
+          />
+          <SelectionBar
+            selection={selection}
+            onClose={clearSelection}
+            onHighlight={(cfi, text) => { addHighlight(cfi, text, HIGHLIGHT, ""); toast({ title: "Highlighted" }); clearSelection(); }}
+            onSaveNote={(cfi, text, note) => { addHighlight(cfi, text, NOTE, (note || "").trim()); toast({ title: "Note saved" }); clearSelection(); }}
+          />
+        </>
+      )}
     </div>
   );
 }

@@ -18,6 +18,17 @@
     "book_description": {
       "type": "string"
     },
+    "book_file_url": {
+      "type": "string"
+    },
+    "book_file_type": {
+      "type": "string",
+      "enum": [
+        "epub",
+        "pdf"
+      ],
+      "default": "epub"
+    },
     "start_date": {
       "type": "string",
       "format": "date"
@@ -127,5 +138,6 @@
         }
       ]
     }
-  }
+  },
+  "required": []
 }

@@ -42,6 +42,17 @@ export default async function(req) {
           started_date: session.start_date || new Date().toISOString().slice(0, 10)
         });
       }
+      // Drop a personal copy of the uploaded book file into the user's library
+      if (session.book_file_url) {
+        const existingEpub = await base44.entities.UserEpub.filter({ session_id: sessionId }, null, 1);
+        if (!existingEpub || existingEpub.length === 0) {
+          await base44.entities.UserEpub.create({
+            title: session.book_title, author: session.book_author, cover_url: session.book_cover,
+            file_url: session.book_file_url, file_type: session.book_file_type || 'epub',
+            session_id: sessionId, progress: 0
+          });
+        }
+      }
       // Notify the creator
       if (session.created_by_id && session.created_by_id !== user.id) {
         try {

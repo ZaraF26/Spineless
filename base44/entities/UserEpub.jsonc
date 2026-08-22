@@ -16,6 +16,17 @@
       "type": "string",
       "required": true
     },
+    "file_type": {
+      "type": "string",
+      "enum": [
+        "epub",
+        "pdf"
+      ],
+      "default": "epub"
+    },
+    "session_id": {
+      "type": "string"
+    },
     "cfi": {
       "type": "string"
     },

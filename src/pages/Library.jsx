@@ -27,17 +27,20 @@ export default function Library() {
   const handleUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!/\.epub$/i.test(file.name)) {
-      toast({ title: "Please choose an .epub file", variant: "destructive" });
+    const isEpub = /\.epub$/i.test(file.name) || file.type === "application/epub+zip";
+    const isPdf = /\.pdf$/i.test(file.name) || file.type === "application/pdf";
+    if (!isEpub && !isPdf) {
+      toast({ title: "Please choose an EPUB or PDF file", variant: "destructive" });
       e.target.value = "";
       return;
     }
+    const fileType = isPdf ? "pdf" : "epub";
     setUploading(true);
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
 
       // Extract metadata + cover from the EPUB
-      let title = file.name.replace(/\.epub$/i, "");
+      let title = file.name.replace(/\.(epub|pdf)$/i, "");
       let author = "";
       let cover_url = "";
       let book = null;
@@ -63,7 +66,7 @@ export default function Library() {
         } catch {}
       }
 
-      await base44.entities.UserEpub.create({ title, author, cover_url, file_url });
+      await base44.entities.UserEpub.create({ title, author, cover_url, file_url, file_type: fileType });
       toast({ title: "Added to your library 📚" });
       load();
     } catch (err) {
@@ -96,12 +99,12 @@ export default function Library() {
           {uploading ? (
             <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Uploading…</>
           ) : (
-            <><Upload className="w-4 h-4" /> Upload an EPUB</>
+            <><Upload className="w-4 h-4" /> Upload EPUB or PDF</>
           )}
-          <input type="file" accept=".epub,application/epub+zip" onChange={handleUpload} className="hidden" />
+          <input type="file" accept=".epub,.pdf,application/epub+zip,application/pdf" onChange={handleUpload} className="hidden" />
         </label>
         <p className="text-xs text-muted-foreground mt-2 text-center">
-          Add .epub files from your device and read them right here.
+          Add EPUB or PDF files from your device and read them right here.
         </p>
       </div>
 
@@ -111,7 +114,7 @@ export default function Library() {
         ) : books.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <BookOpen className="w-10 h-10 text-muted-foreground/60 mb-3" />
-            <p className="text-sm text-muted-foreground">No books yet. Upload your first EPUB above.</p>
+            <p className="text-sm text-muted-foreground">No books yet. Upload your first EPUB or PDF above.</p>
           </div>
         ) : (
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
