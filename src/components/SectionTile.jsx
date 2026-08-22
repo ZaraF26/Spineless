@@ -9,11 +9,11 @@ const TONES = {
 
 export default function SectionTile({ icon: Icon, title, tone = "primary" }) {
   return (
-    <div className="flex flex-col items-center gap-1.5 w-[88px] shrink-0">
-      <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-sm ${TONES[tone]}`}>
-        <Icon className="w-7 h-7" />
+    <div className="flex items-center gap-3">
+      <div className={`w-11 h-11 rounded-2xl flex items-center justify-center shadow-sm ${TONES[tone]}`}>
+        <Icon className="w-5 h-5" />
       </div>
-      <span className="font-heading text-[13px] font-semibold text-center leading-tight line-clamp-2">
+      <span className="font-heading text-lg font-semibold leading-tight">
         {title}
       </span>
     </div>

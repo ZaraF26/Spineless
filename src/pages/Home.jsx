@@ -58,7 +58,7 @@ export default function Home() {
 
   return (
     <div>
-      <PageHeader title={`${greeting}, ${firstName}`} subtitle="What's happening in your reading corner?" />
+      <PageHeader title={`${greeting}, ${firstName}`} />
 
       {loading ? (
         <div className="flex justify-center py-20"><div className="w-7 h-7 border-4 border-border border-t-primary rounded-full animate-spin" /></div>
